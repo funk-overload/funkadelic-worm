@@ -6,11 +6,11 @@
         "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": true,
-        "outDir": "public/scripts",
+        "outDir": "src/javascripts",
         "target": "es5"
     },
     "include": [
-        "internal/typescripts/**/*"
+        "src/typescripts/**/*"
     ],
     "exclude": [
         "node_modules"
