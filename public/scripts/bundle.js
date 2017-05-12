@@ -99,19 +99,44 @@ var GameObject = (function () {
 }());
 var GameScene = (function () {
     function GameScene() {
-        this.init();
+        this.Init();
     }
-    GameScene.prototype.init = function () {
+    GameScene.prototype.Init = function () {
     };
-    GameScene.prototype.update = function () {
+    GameScene.prototype.Update = function (delta) {
     };
-    GameScene.prototype.renderScene = function () {
+    GameScene.prototype.Render = function () {
+    };
+    GameScene.prototype.AddRenderObject = function (obj) {
+        GameEngine.application.stage.addChild(obj);
     };
     return GameScene;
 }());
 var SceneManager = (function () {
     function SceneManager() {
+        this.scenes = new Array();
     }
+    SceneManager.prototype.Init = function () {
+        GameEngine.application.ticker.add(function (delta) {
+            GameEngine.sceneManager.UpdateScenes(delta);
+            GameEngine.sceneManager.RenderScenes();
+        });
+    };
+    SceneManager.prototype.UpdateScenes = function (delta) {
+        for (var _i = 0, _a = this.scenes; _i < _a.length; _i++) {
+            var scene = _a[_i];
+            scene.Update(delta);
+        }
+    };
+    SceneManager.prototype.RenderScenes = function () {
+        for (var _i = 0, _a = this.scenes; _i < _a.length; _i++) {
+            var scene = _a[_i];
+            scene.Render();
+        }
+    };
+    SceneManager.prototype.AddScene = function (scene) {
+        this.scenes[this.scenes.length] = scene;
+    };
     return SceneManager;
 }());
 var Worm = (function (_super) {
@@ -122,43 +147,72 @@ var Worm = (function (_super) {
     Worm.prototype.update = function () {
     };
     Worm.prototype.render = function () {
+        console.log("funkworm rendered");
     };
     return Worm;
 }(GameObject));
 var FunkadelicWorm = (function (_super) {
     __extends(FunkadelicWorm, _super);
     function FunkadelicWorm() {
-        return _super.call(this) || this;
+        var _this = _super.call(this) || this;
+        _this.count = 0;
+        _this.ropeLength = 918 / 20;
+        return _this;
     }
-    FunkadelicWorm.prototype.init = function () {
+    FunkadelicWorm.prototype.Init = function () {
+        console.log("init funkadelic worm");
+        this.bunny = PIXI.Sprite.fromImage('sprites/bunny.png');
+        this.bunny.anchor.set(0.5);
+        this.bunny.x = GameEngine.application.renderer.width / 2;
+        this.bunny.y = GameEngine.application.renderer.height / 2;
+        this.AddRenderObject(this.bunny);
+        var count = 0;
+        this.points = new Array();
+        for (var i = 0; i < 25; i++) {
+            this.points.push(new PIXI.Point(i * this.ropeLength, 0));
+        }
+        var strip = new PIXI.mesh.Rope(PIXI.Texture.fromImage('sprites/bunny.png'), this.points);
+        strip.x = -40;
+        strip.y = 300;
+        this.AddRenderObject(strip);
+        this.g = new PIXI.Graphics();
+        this.g.x = strip.x;
+        this.g.y = strip.y;
+        this.AddRenderObject(this.g);
     };
-    FunkadelicWorm.prototype.update = function () {
+    FunkadelicWorm.prototype.Update = function (delta) {
+        this.bunny.rotation += 0.1 * delta;
+        this.count += 0.1;
+        for (var i = 0; i < this.points.length; i++) {
+            this.points[i].y = Math.sin((i * 0.5) + this.count) * 30;
+            this.points[i].x = i * this.ropeLength + Math.cos((i * 0.3) + this.count) * 20;
+        }
     };
-    FunkadelicWorm.prototype.renderScene = function () {
+    FunkadelicWorm.prototype.Render = function () {
+        this.g.clear();
+        this.g.lineStyle(2, 0xffc2c2);
+        this.g.moveTo(this.points[0].x, this.points[0].y);
+        for (var i = 1; i < this.points.length; i++) {
+            this.g.lineTo(this.points[i].x, this.points[i].y);
+        }
+        for (var i = 1; i < this.points.length; i++) {
+            this.g.beginFill(0xff0022);
+            this.g.drawCircle(this.points[i].x, this.points[i].y, 10);
+            this.g.endFill();
+        }
     };
     return FunkadelicWorm;
 }(GameScene));
 var GameEngine = (function () {
     function GameEngine() {
         this.gameDivId = "gameDiv";
-        this.application = new PIXI.Application(800, 600, { backgroundColor: 0x1099bb });
-        document.getElementById(this.gameDivId).appendChild(this.application.view);
-        this.initGameLoop();
+        GameEngine.application = new PIXI.Application(800, 600, { backgroundColor: 0x1099bb });
+        document.getElementById(this.gameDivId).appendChild(GameEngine.application.view);
+        GameEngine.sceneManager.AddScene(new FunkadelicWorm());
+        this.Init();
     }
-    GameEngine.prototype.initGameLoop = function () {
-        this.bunny = PIXI.Sprite.fromImage('sprites/bunny.png');
-        this.bunny.anchor.set(0.5);
-        this.bunny.x = this.application.renderer.width / 2;
-        this.bunny.y = this.application.renderer.height / 2;
-        this.bunny.rotation = 1;
-        this.application.stage.addChild(this.bunny);
-        var bunny = this.bunny;
-        this.application.ticker.add(function (delta) {
-            GameEngine.animateBunny(delta, bunny);
-        });
-    };
-    GameEngine.animateBunny = function (delta, bunny) {
-        bunny.rotation += 0.1 * 1;
+    GameEngine.prototype.Init = function () {
+        GameEngine.sceneManager.Init();
     };
     return GameEngine;
 }());
