@@ -105,7 +105,7 @@ class Worm extends GameObject
 	}
 	update()
 	{
-		
+
 	}
 	render()
 	{
@@ -130,7 +130,11 @@ class FunkadelicWorm extends GameScene
 
 	count = 0;
 	// build a rope!
-	ropeLength = 918 / 20;		
+	ropeLength = 918 / 20;
+
+	screenSize = new PIXI.Point(GameEngine.application.screen.width, GameEngine.application.screen.height);
+	gridSize = new PIXI.Point(16, 12);
+
 
 	constructor()
 	{
@@ -138,7 +142,31 @@ class FunkadelicWorm extends GameScene
 	}
 	Init() : void
 	{
-		console.log("init funkadelic worm");
+        this.screenSize = new PIXI.Point(GameEngine.application.screen.width, GameEngine.application.screen.height);
+        this.gridSize = new PIXI.Point(16, 12);
+
+        //grid stuff
+        let width = this.screenSize.x/this.gridSize.x;
+        let height = this.screenSize.y/this.gridSize.y;
+        for (let i = 0; i < this.gridSize.x; i++)
+        {
+            for (let k = 0; k < this.gridSize.y; k++)
+            {
+                let posX = width * i;
+                let posY = height * k;
+
+                var style = new PIXI.TextStyle({
+                    fontFamily: 'Arial',
+                    fontSize: 8
+                });
+
+                let basicText = new PIXI.Text('X: ' + posX + " Y: " + posY, style);
+                basicText.x = posX;
+                basicText.y = posY;
+
+                this.AddRenderObject(basicText);
+            }
+        }
 
 		this.bunny = PIXI.Sprite.fromImage('sprites/bunny.png');
 		this.bunny.anchor.set(0.5);
@@ -152,11 +180,11 @@ class FunkadelicWorm extends GameScene
 
 		//rope tests
 		var count = 0;
-	
+
 		this.points = new Array();
 
 		for (var i = 0; i < 25; i++) {
-		    this.points.push(new PIXI.Point(i * this.ropeLength, 0));
+			this.points.push(new PIXI.Point(i * this.ropeLength, 0));
 		}
 
 
@@ -174,6 +202,7 @@ class FunkadelicWorm extends GameScene
 		this.g.y = strip.y;
 
 		this.AddRenderObject(this.g);
+
 	}
 	Update(delta: number) : void
 	{
@@ -182,29 +211,65 @@ class FunkadelicWorm extends GameScene
 
 		this.count += 0.1;
 
-	    // make the snake
-	    for (var i = 0; i < this.points.length; i++) {
-	        this.points[i].y = Math.sin((i * 0.5) + this.count) * 30;
-	        this.points[i].x = i * this.ropeLength + Math.cos((i * 0.3) + this.count) * 20;
-	    }
+		// make the snake
+		for (var i = 0; i < this.points.length; i++) {
+			this.points[i].y = Math.sin((i * 0.5) + this.count) * 30;
+			this.points[i].x = i * this.ropeLength + Math.cos((i * 0.3) + this.count) * 20;
+		}
 	}
 	Render()
 	{
 		this.g.clear();
 
-	    this.g.lineStyle(2,0xffc2c2);
-	    this.g.moveTo(this.points[0].x, this.points[0].y);
+        // //grid stuff
+        // let width = this.screenSize.x/this.gridSize.x;
+        // let height = this.screenSize.y/this.gridSize.y;
+        // for (let i = 0; i < this.gridSize.x; i++)
+        // {
+        //     for (let k = 0; k < this.gridSize.y; k++)
+        //     {
+        //         this.g.lineStyle(2,0xffc2c2);
+        //         // this.g.beginFill(0xff0022);
+        //
+        //         let posX = width * i;
+        //         let posY = height * k;
+        //         this.g.drawRect(posX, posY, width, height);
+        //
+        //
+        //         var style = new PIXI.TextStyle({
+        //             fontFamily: 'Arial',
+        //             fontSize: 8
+        //         });
+        //
+        //         let basicText = new PIXI.Text('X: ' + posX + " Y: " + posY, style);
+        //         basicText.x = posX;
+        //         basicText.y = posY;
+        //         // basicText.style.fontSize = 0.5;
+        //
+        //
+        //         this.g.addChildAt(basicText,i+k);
+        //
+        //         this.g.endFill();
+        //     }
+        // }
 
-	    for (var i = 1; i < this.points.length; i++) {
-	        this.g.lineTo(this.points[i].x, this.points[i].y);
-	    }
 
-	    for (var i = 1; i < this.points.length; i++) {
-	        this.g.beginFill(0xff0022);
-	        this.g.drawCircle(this.points[i].x, this.points[i].y,10);
-	        this.g.endFill();
-	    }
-	}
+		this.g.lineStyle(2,0xffc2c2);
+		this.g.moveTo(this.points[0].x, this.points[0].y);
+
+		for (var i = 1; i < this.points.length; i++) {
+			this.g.lineTo(this.points[i].x, this.points[i].y);
+		}
+
+		for (var i = 1; i < this.points.length; i++) {
+			this.g.beginFill(0xff0022);
+			this.g.drawCircle(this.points[i].x, this.points[i].y,10);
+			this.g.endFill();
+		}
+
+
+
+    }
 }
 
 
@@ -227,7 +292,7 @@ class GameEngine
 		//add whatever scene youre interested in
 		GameEngine.sceneManager.AddScene(new FunkadelicWorm());
 
-		this.Init();		
+		this.Init();
 	}
 
 	Init() : void
